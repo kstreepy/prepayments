@@ -16,7 +16,7 @@ class DataStore(object):
     COMPRESSION = tables.Filters(complevel=9,complib='blosc')
     ALL_NINES = re.compile("^9+$")
     def __init__(self, path, read_only=True):
-        raise NotImplementedException
+        raise NotImplementedError
 
     def parse_entry(self, v, k, table_class):
         v_kind = table_class.columns[k].kind
@@ -67,7 +67,6 @@ class DataStore(object):
     def print_row(self, p_table, index=0, fields=None):
         """Display a table row with nice formatting in columns. This is
         inefficient if you have a lot of rows.
-
         :param p_table: table from which to display row
         :type p_table: pytables.Table
         :param index: table row to display
@@ -84,7 +83,7 @@ class DataStore(object):
         return {k:self.display_entry(p_table, k, row[k])}
 
     def get_samples(self, n=1000):
-        raise NotImplementedException
+        raise NotImplementedError
 
     @staticmethod
     def dt_from_ts(ts):
@@ -117,7 +116,6 @@ class DataStore(object):
 
 class GNM_II_LL(DataStore, GNM_II_LL_Mixin):
     """Handler for the GNM II loan-level data.
-
     NB. NaN for pcts is -31073 due to overflow."""
 
     def __init__(self, path=None, read_only=True):
@@ -125,7 +123,6 @@ class GNM_II_LL(DataStore, GNM_II_LL_Mixin):
         pool-level data, and one with loan-level data, and one tracking
         processed files. There's no need to impose structure in the hierarchy,
         I don't think. Mainly, we're going to be sampling data from the Loans table.
-
         :param path: Path of the file
         :type path: str
         :param read_only: Is the file locked? Default True for safety
@@ -162,7 +159,9 @@ class GNM_II_LL(DataStore, GNM_II_LL_Mixin):
                     1.3:datetime.date(2013,5,21),
                     1.4:datetime.date(2013,8,1),
                     1.5:datetime.date(2014,1,1),
-                    1.6:datetime.date(2015,4,1)}
+                    1.6:datetime.date(2015,4,1),
+                    1.7:datetime.date(2017,12,1),
+                    1.8:datetime.date(2021,2,1)}
         path_dir, filename = os.path.split(path)
         file_pattern = re.compile("GNMA_MBS_LL_MON_([0-9]{4})([0-9]{2})_[0-9]{3}.txt$")
         if not file_pattern.match(filename):
@@ -212,7 +211,6 @@ class GNM_II_LL(DataStore, GNM_II_LL_Mixin):
 
     def get_samples(self, n=1000, keep_indexes=False):
         """Returns a list of (row_number, cusip, as_of_date) tuples.
-
         :param n: number of samples to return
         :type n: int
         :param keep_indexes: return the loan_table index of each sample
@@ -253,7 +251,6 @@ class GNM_II_LL(DataStore, GNM_II_LL_Mixin):
 
 class GNM_Pool(DataStore, GNM_Pool_Mixin):
     """Handler for the GNM II pool-level data.
-
     NB. NaN for pcts is -31073 due to overflow."""
 
     def __init__(self, path=None, read_only=True):
@@ -352,7 +349,7 @@ class GNM_Pool(DataStore, GNM_Pool_Mixin):
         with open(path, "r") as f:
             for i, line in enumerate(f):
                 if i % 10 == 0:
-                    print i
+                    print(i)
                 record_type = line[18:19]
                 record_ind = self.record_types.index(record_type)
                 if not self.record_dicts[record_ind].has_key(file_version):
@@ -380,7 +377,6 @@ class GNM_Pool(DataStore, GNM_Pool_Mixin):
 
     def update_preprocessed_data(self):
         """Pre-calculate some data
-
          - Average WAC of all pools per origination month
          - upb of prepaid loans / original balance
         """
@@ -453,7 +449,6 @@ class GNM_Pool(DataStore, GNM_Pool_Mixin):
 
     def get_samples(self, n=1000):
         """Returns a list of (row_number, cusip, as_of_date) tuples.
-
         :param n: number of samples to return
         :type n: int
         :rtype: list"""
@@ -464,7 +459,6 @@ class GNM_Pool(DataStore, GNM_Pool_Mixin):
 
     def df_for_cusip(self, cusip, p_table=None, trim=True):
         """Return a DataFrame of data in pools_table for a given cusip
-
         :param cusip: pool number to look up
         :type cusip: str
         :param p_table: table in which to look up pool number (defaults to
@@ -472,7 +466,6 @@ class GNM_Pool(DataStore, GNM_Pool_Mixin):
         :type p_table: tables.table.Table
         :param trim: trim the data to good values (i.e. >= 2012-09-01)?
         :type trim: bool
-
         :rtype pandas.DataFrame:
         """
         if p_table is None:
@@ -486,7 +479,6 @@ class GNM_Pool(DataStore, GNM_Pool_Mixin):
 
     def smm_for_cusip(self, cusip):
         """Calculate SMM (single month mortality rate) from pools table.
-
         :param cusip: cusip to look up
         :type cusip: str
         :return: historical SMM
@@ -511,7 +503,7 @@ class GNM_Pool(DataStore, GNM_Pool_Mixin):
             sb = pd.Series({p_data['as_of_date'][i]:self.scheduled_balance(p_data['pool_upb'][i-1],
                                                                         p_data['security_interest_rate'][i],
                                                                         p_data['wala'][i])
-                            for i in xrange(1,p_data.shape[0])})
+                            for i in range(1,p_data.shape[0])})
             smm = sb.sub(p_data.ix[1:,'pool_upb']).div(sb)
 
             smm.index = pd.DatetimeIndex(smm.index)
@@ -520,7 +512,6 @@ class GNM_Pool(DataStore, GNM_Pool_Mixin):
     def cpr_for_cusip(self, cusip):
         """Calculate CPR from pools table. We prefer BBG's CPR data as it has a
         longer history.
-
         :param cusip: cusip to look up
         :type cusip: str
         """
@@ -567,7 +558,7 @@ class GNM_Pool(DataStore, GNM_Pool_Mixin):
 def main(files):
     ds = GNM_Pool(read_only=False)
     for f in files:
-        print 'Adding {} to DataStore {}'.format(f,ds.path)
+        print('Adding {} to DataStore {}').format(f,ds.path)
         ds.add_file(f)
 
 if __name__ == "__main__":
@@ -578,4 +569,3 @@ if __name__ == "__main__":
                         help="Files to add to the DataStore.")
     args = parser.parse_args()
     sys.exit(main(args.files))
-
