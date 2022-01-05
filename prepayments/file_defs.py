@@ -791,7 +791,7 @@ class GNM_II_LL_Mixin(object):
         dsn = tables.Int32Col() #Disclosure Sequence Number
         issuer_id = tables.Int16Col()
         agency = tables.EnumCol(list("FVRN"),"F",base='int8') # F = FHA, V = VA, R = Rural, N = Native American
-        loan_purpose = tables.EnumCol({'Purchase':1,'Refinance':2,'HAMPmod':3,'nonHAMPmod':4,'blank':0},
+        loan_purpose = tables.EnumCol({'Purchase':1,'Refinance':2,'HAMPmod':3,'nonHAMPmod':4,'Re-performing':5,'blank':0},
                                       'Purchase',base='int8') 
         refinance_type = tables.EnumCol({'Normal':1,'CashOut':2,'Streamlined':3,'blank':0},
                                         'Normal',base='int8')
@@ -827,5 +827,17 @@ class GNM_II_LL_Mixin(object):
         as_of_date = tables.Time32Col()
         loan_origination_date = tables.Time32Col()
         seller_issuer_id = tables.Int16Col()
+        index_type = tables.EnumCol({'Constant Maturity Treasury':'CMT','London Interbank Offered Rate':'LIBOR','blank':''},
+                                        'Constant Maturity Treasury',base='int16')
+        look_back_period = tables.Int16Col()
+        interest_rate_change_date = tables.Time32Col()
+        initial_interest_rate_cap = tables.Int8Col()
+        subsequent_interest_rate_cap = tables.Int8Col()
+        lifetime_interest_rate_cap = tables.Int8Col()
+        next_interest_rate_change_ceiling = tables.Time32Col()
+        lifetime_interest_rate_ceiling = tables.Time32Col()
+        lifetime_interest_rate_floor = tables.Time32Col()
+        prospective_interest_rate = tables.Time32Col()
+
         #msa = tables.Int32Col() #metropolitan statistical area (blank on these)
         #combined_ltv = tables.Int16Col() # combined loan-to-value (?) always blank
